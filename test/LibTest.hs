@@ -7,7 +7,8 @@ import Lib
 
 main :: IO ()
 main = do
-  defaultMain (testGroup "Our Library Tests" [simple,complex,mixed])
+  c <- readFile "test/simpleModule.ts"
+  defaultMain (testGroup "Our Library Tests" [simple, complex, mixed, simpleFile c])
 
 simple :: TestTree
 simple = testGroup "Simple import / exports"
@@ -42,5 +43,13 @@ mixed = testGroup "Mixed lines"
       (parse parseImportsExports "" "this is a line\nimport {A}\n" `shouldParse` (ImportStmt ["A"],ExportStmt []))
   , testCase "Non impExp lines"
       (parse parseImportsExports "" "this is a line\nimport {A}basdfd\nNonSense\nexport   {B  }\blah" `shouldParse` (ImportStmt ["A"],ExportStmt ["B"]))
+  , testCase "Similar words 'imporFoo' or 'exportBlah'"
+      (parse parseImportsExports "" "this is a line\nimporFoo {C   }\nimport {A}basdfd\nNonSense\nexport   {B  }\nblah\nexportBlah  {D}" `shouldParse` (ImportStmt ["A"],ExportStmt ["B"]))
   ]
 
+simpleFile :: String -> TestTree
+simpleFile s = testGroup "Simple file"
+  [
+    testCase "Parses the content of the file correctly"
+      (parse parseImportsExports "" s `shouldParse` (ImportStmt ["FormsModule","CommonModule","NgModule"],ExportStmt []))
+  ]

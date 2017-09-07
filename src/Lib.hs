@@ -1,8 +1,6 @@
 module Lib (parseImportsExports, ImportStmt(..), ExportStmt(..)) where
-
 import Control.Monad (void)
 import Text.Megaparsec
-import Text.Megaparsec.Expr
 import Text.Megaparsec.String
 import qualified Text.Megaparsec.Lexer as L
 
@@ -41,7 +39,10 @@ importExportParser i = do
 
 impExpLine :: Parser ImpExports
 impExpLine = p (ImportStmt [], ExportStmt [])
-  where p s@(ImportStmt i, ExportStmt e) = eof *> pure s <|> (importParser s >>= \a -> p a) <|> (exportParser s >>= \a -> p a) <|> restOfLine *> pure s
+  where p s = eof *> pure s
+               <|> try (importParser s >>= \a -> p a)
+               <|> try (exportParser s >>= \a -> p a)
+               <|> restOfLine *> pure s
 
 restOfLine :: Parser String
 restOfLine = manyTill anyChar (eol <|> eof *> return "blash")
