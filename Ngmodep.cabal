@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Lib, DrawGraph
+  exposed-modules:     ParseModule, DrawGraph
   build-depends:       base >= 4.7 && < 5
                      , megaparsec
                      , tasty
@@ -30,14 +30,14 @@ executable Ngmodep-exe
   build-depends:       base
                      , Ngmodep
                      , megaparsec
-                     , tasty
-                     , tasty-hunit
+                     , directory-tree
+                     , filepath
   default-language:    Haskell2010
 
 test-suite Ngmodep-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
-  main-is:             LibTest.hs
+  main-is:             ParseModuleTest.hs
   build-depends:       base
                      , Ngmodep
                      , megaparsec

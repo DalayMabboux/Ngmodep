@@ -3,7 +3,7 @@ import Test.Tasty.HUnit
 import Text.Megaparsec
 import Test.Hspec.Megaparsec
 
-import Lib
+import ParseModule
 
 main :: IO ()
 main = do

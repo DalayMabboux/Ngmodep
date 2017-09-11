@@ -1,4 +1,5 @@
-module Lib (parseImportsExports, ImportStmt(..), ExportStmt(..)) where
+module ParseModule (parseImportsExports, ImportStmt(..), ExportStmt(..)) where
+
 import Control.Monad (void)
 import Text.Megaparsec
 import Text.Megaparsec.String
