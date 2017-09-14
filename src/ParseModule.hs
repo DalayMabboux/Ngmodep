@@ -1,4 +1,4 @@
-module ParseModule (parseImportsExports, ImportStmt(..), ExportStmt(..)) where
+module ParseModule (parseImportsExports, parseModule, ImportStmt(..), ExportStmt(..), ImpExports) where
 
 import Control.Monad (void)
 import Text.Megaparsec
@@ -63,3 +63,10 @@ flatten [] = (ImportStmt [], ExportStmt[])
 flatten ies = foldr f (ImportStmt [], ExportStmt []) ies
   where
     f ((ImportStmt is, ExportStmt es)) ((ImportStmt isa, ExportStmt esa)) = (ImportStmt $ isa ++ is, ExportStmt $ esa ++ es)
+
+parseModule :: String -> IO (ImportStmt, String)
+parseModule f = do
+  c <- readFile f
+  case runParser parseImportsExports "" c of
+    Left _ -> return (ImportStmt [], "")
+    Right (ImportStmt is, ExportStmt es) -> if length es == 1 then return (ImportStmt is, head es) else return (ImportStmt [], "")

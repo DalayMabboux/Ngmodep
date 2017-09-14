@@ -3,7 +3,7 @@ import Test.Tasty.HUnit
 import Text.Megaparsec
 import Test.Hspec.Megaparsec
 
-import ParseModule
+import ParseModule (parseImportsExports, ImportStmt (..), ExportStmt (..))
 
 main :: IO ()
 main = do
@@ -15,13 +15,13 @@ simple :: TestTree
 simple = testGroup "Simple import / exports"
   [
     testCase "Parses import"
-      (parse parseImportsExports "" "import {A}" `shouldParse` (ImportStmt ["A"],ExportStmt []))
+      (parse parseImportsExports "" "import {A}" `shouldParse` (ImportStmt ["A"], ExportStmt []))
   , testCase "Parses export"
-      (parse parseImportsExports "" "export {A}" `shouldParse` (ImportStmt [],ExportStmt ["A"]))
+      (parse parseImportsExports "" "export {A}" `shouldParse` (ImportStmt [], ExportStmt ["A"]))
   , testCase "Parses export with spaces"
-      (parse parseImportsExports "" "export    {   A       }  " `shouldParse` (ImportStmt [],ExportStmt ["A"]))
+      (parse parseImportsExports "" "export    {   A       }  " `shouldParse` (ImportStmt [], ExportStmt ["A"]))
   , testCase "Parses import and export"
-      (parse parseImportsExports "" "import {A}\nexport {B}" `shouldParse` (ImportStmt ["A"],ExportStmt ["B"]))
+      (parse parseImportsExports "" "import {A}\nexport {B}" `shouldParse` (ImportStmt ["A"], ExportStmt ["B"]))
   ]
 
 complex :: TestTree
