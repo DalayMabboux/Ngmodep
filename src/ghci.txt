@@ -1,0 +1,16 @@
+f :: Eq a => [LNode a] -> a -> Maybe Int
+f ns a = fst <$> find'
+  where find' = find (\b -> snd b == a) ns
+>>
+>>d = mkGraph [(1,"a"),(2,"b"),(3,"c")] [(1,2,'a')] :: Gr String Char
+>>
+>>
+>>
+>>f (labNodes d) "b"
+Just 2
+>>
+>>
+>>f (labNodes d) "bd"
+Nothing
+>>
+
