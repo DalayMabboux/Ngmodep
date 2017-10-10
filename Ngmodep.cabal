@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     ParseModule, DrawGraph
+  exposed-modules:     ParseModule, DrawGraph, Types
   build-depends:       base >= 4.7 && < 5
                      , megaparsec
                      , tasty

@@ -2,6 +2,7 @@ module DrawGraph where
 
 import Data.Text.Lazy (Text, pack, unpack)
 import Data.Graph.Inductive (Gr, mkGraph)
+import Data.Graph.Inductive.Graph (labEdges)
 import Data.GraphViz (
   GraphvizParams,
   GlobalAttributes(
@@ -43,6 +44,22 @@ import Data.GraphViz.Attributes.Complete (
   zVal,
   focus
   )
+import Types (
+  NgGraph(..), ImpExports
+  )
+
+addAndGet :: NgGraph -> String -> (NgGraph, Int)
+addAndGet = undefined
+
+get :: NgGraph -> String -> Maybe Int
+get = undefined
+
+nextInt :: NgGraph -> Int
+nextInt g = length $ labEdges $ Types.gr g
+
+merge :: NgGraph -> ImpExports -> NgGraph
+merge = undefined
+
 {-
 create :: [([String],[String])] -> Gr Text Text
 create l = foldl f (mkGraph [] []) l

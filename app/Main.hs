@@ -7,7 +7,7 @@ import System.Exit (ExitCode(ExitFailure), exitWith)
 
 import System.FilePath (takeExtensions)
 
-import ParseModule (parseModule, ImpExports)
+import ParseModule (parseModule)
 
 -- | Loop recursivly through the given directory
 main :: IO ()

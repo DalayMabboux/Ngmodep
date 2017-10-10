@@ -1,17 +1,12 @@
-module ParseModule (parseImportsExports, parseModule, ImportStmt(..), ExportStmt(..), ImpExports) where
+module ParseModule (parseImportsExports, parseModule) where
 
 import Control.Monad (void)
 import Text.Megaparsec
 import Text.Megaparsec.String
 import qualified Text.Megaparsec.Lexer as L
 
-data ImportStmt = ImportStmt [String]
-  deriving (Show, Eq)
+import Types (ImportStmt(..), ExportStmt(..), ImpExports(..), empty)
 
-data ExportStmt = ExportStmt [String]
-  deriving (Show, Eq)
-
-type ImpExports = (ImportStmt, ExportStmt)
 
 sc :: Parser ()
 sc = L.space (void $ satisfy f) lineCmnt blockCmnt
@@ -39,7 +34,7 @@ importExportParser i = do
   return j
 
 impExpLine :: Parser ImpExports
-impExpLine = p (ImportStmt [], ExportStmt [])
+impExpLine = p empty
   where p s = eof *> pure s
                <|> try (importParser s >>= \a -> p a)
                <|> try (exportParser s >>= \a -> p a)
@@ -49,24 +44,30 @@ restOfLine :: Parser String
 restOfLine = manyTill anyChar (eol <|> eof *> return "blash")
 
 importParser :: ImpExports -> Parser ImpExports
-importParser (ImportStmt i, ExportStmt e)= importExportParser "import" >>= \s -> return $ (ImportStmt (s ++ i), ExportStmt (e))
+importParser (ImpExports (ImportStmt i, e)) = importExportParser "import" >>= \s -> return $ ImpExports (ImportStmt (s ++ i), e)
 
+-- | TODO: handle case when there are more is more than one export statement
 exportParser :: ImpExports -> Parser ImpExports
-exportParser (ImportStmt i, ExportStmt e)= importExportParser "export" >>= \s -> return $ (ImportStmt (i), ExportStmt (s ++ e))
+exportParser (ImpExports (ImportStmt i, e))= importExportParser "export" >>= \s -> return $ ImpExports (ImportStmt (i), ExportStmt $ Just $ head s)
 
 -- | Returns a tuple of ImportStmt (containing a list of import statements) and ExportStmt (contains a list of export statements)
 parseImportsExports :: Parser ImpExports
 parseImportsExports = flatten <$> someTill impExpLine (eof *> return "eof")
 
 flatten :: [ImpExports] -> ImpExports
-flatten [] = (ImportStmt [], ExportStmt[])
-flatten ies = foldr f (ImportStmt [], ExportStmt []) ies
+flatten [] = empty
+flatten ies = foldr f empty ies
   where
-    f ((ImportStmt is, ExportStmt es)) ((ImportStmt isa, ExportStmt esa)) = (ImportStmt $ isa ++ is, ExportStmt $ esa ++ es)
+    e' e ea = case (e, ea) of
+                (Nothing, Nothing) -> ExportStmt Nothing
+                (Nothing, Just _) -> ExportStmt ea
+                (Just _, Nothing) -> ExportStmt e
+                (Just _, Just _) -> undefined
+    f (ImpExports (ImportStmt is, ExportStmt e)) (ImpExports (ImportStmt isa, ExportStmt ea)) = ImpExports (ImportStmt $ isa ++ is, e' e ea)
 
-parseModule :: String -> IO (ImportStmt, String)
+parseModule :: String -> IO ImpExports
 parseModule f = do
   c <- readFile f
   case runParser parseImportsExports "" c of
-    Left _ -> return (ImportStmt [], "")
-    Right (ImportStmt is, ExportStmt es) -> if length es == 1 then return (ImportStmt is, head es) else return (ImportStmt [], "")
+    Left _ -> return empty
+    Right a -> return a
