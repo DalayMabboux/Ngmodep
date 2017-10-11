@@ -1,5 +1,6 @@
 module DrawGraph where
 
+import Data.List (find)
 import Data.Text.Lazy (Text, pack, unpack)
 import Data.Graph.Inductive (Gr, mkGraph)
 import Data.Graph.Inductive.Graph (LNode, labEdges, labNodes, insNode, insEdge)
@@ -55,10 +56,10 @@ addAndGet g s = case (get g s) of
                   where ni = nextInt g
 
 get :: NgGraph -> String -> Maybe Int
-get ng s = find (labNodes $ gr ng) f
+get ng s = findX (labNodes $ gr ng) f
               where
-                find :: [LNode a] -> f -> Maybe Int
-                find = undefined
+                findX :: [LNode a] -> Maybe Int
+                findX = snd <$> find (\(s', i) -> s == s')
                 f :: (String, Int) -> String -> Maybe Int
                 f (s, i) ss = case s == ss of
                                 true -> Just i
