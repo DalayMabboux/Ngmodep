@@ -2,7 +2,7 @@ module DrawGraph where
 
 import Data.Text.Lazy (Text, pack, unpack)
 import Data.Graph.Inductive (Gr, mkGraph)
-import Data.Graph.Inductive.Graph (labEdges)
+import Data.Graph.Inductive.Graph (LNode, labEdges, labNodes, insNode, insEdge)
 import Data.GraphViz (
   GraphvizParams,
   GlobalAttributes(
@@ -45,20 +45,36 @@ import Data.GraphViz.Attributes.Complete (
   focus
   )
 import Types (
-  NgGraph(..), ImpExports
+  NgGraph(..), ImportStmt(..), ExportStmt(..), ImpExports(..)
   )
 
 addAndGet :: NgGraph -> String -> (NgGraph, Int)
-addAndGet = undefined
+addAndGet g s = case (get g s) of
+                  Nothing -> (NgGraph (insNode (ni, s) (gr g)), ni)
+                  Just i -> (g, i)
+                  where ni = nextInt g
 
 get :: NgGraph -> String -> Maybe Int
-get = undefined
+get ng s = find (labNodes $ gr ng) f
+              where
+                find :: [LNode a] -> f -> Maybe Int
+                find = undefined
+                f :: (String, Int) -> String -> Maybe Int
+                f (s, i) ss = case s == ss of
+                                true -> Just i
+                                false -> Nothing
 
 nextInt :: NgGraph -> Int
 nextInt g = length $ labEdges $ Types.gr g
 
 merge :: NgGraph -> ImpExports -> NgGraph
-merge = undefined
+merge ng (ImpExports (ImportStmt is, ExportStmt e)) =  NgGraph (foldl f (gr ng) is)
+                                                       where
+                                                        f a i = insEdge (ixi, ixe, undefined) (gr ng'')
+                                                          where (ng'', ixi) = addAndGet ng' i
+                                                        (ng', ixe) = case e of
+                                                            Nothing -> (ng, 0)
+                                                            Just e -> addAndGet ng e
 
 {-
 create :: [([String],[String])] -> Gr Text Text
