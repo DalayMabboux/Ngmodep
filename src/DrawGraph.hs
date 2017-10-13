@@ -49,33 +49,27 @@ import Types (
   NgGraph(..), ImportStmt(..), ExportStmt(..), ImpExports(..)
   )
 
-addAndGet :: NgGraph -> String -> (NgGraph, Int)
-addAndGet g s = case (get g s) of
-                  Nothing -> (NgGraph (insNode (ni, s) (gr g)), ni)
-                  Just i -> (g, i)
-                  where ni = nextInt g
+add :: NgGraph -> String -> NgGraph
+add g s = case (get g s) of
+            Nothing -> NgGraph (insNode (ni, s) (gr g))
+            Just i -> g
+            where ni = nextInt g
 
 get :: NgGraph -> String -> Maybe Int
-get ng s = findX (labNodes $ gr ng) f
-              where
-                findX :: [LNode a] -> Maybe Int
-                findX = snd <$> find (\(s', i) -> s == s')
-                f :: (String, Int) -> String -> Maybe Int
-                f (s, i) ss = case s == ss of
-                                true -> Just i
-                                false -> Nothing
+get ng s = fst <$> find f (labNodes $ gr ng)
+                      where f = (== s) . snd
 
 nextInt :: NgGraph -> Int
 nextInt g = length $ labEdges $ Types.gr g
 
 merge :: NgGraph -> ImpExports -> NgGraph
-merge ng (ImpExports (ImportStmt is, ExportStmt e)) =  NgGraph (foldl f (gr ng) is)
-                                                       where
-                                                        f a i = insEdge (ixi, ixe, undefined) (gr ng'')
-                                                          where (ng'', ixi) = addAndGet ng' i
-                                                        (ng', ixe) = case e of
-                                                            Nothing -> (ng, 0)
-                                                            Just e -> addAndGet ng e
+merge ng (ImpExports (ImportStmt is, ExportStmt e)) = foldl f ng' is
+                                                        where
+                                                          f a i = NgGraph $ insEdge (ixi, ixe, ()) (gr ng'')
+                                                            where ng'' = add a i -- add the new import node
+                                                                  (Just ixi) = get ng'' i -- and get its index
+                                                          ng' = add ng e -- first add the export node
+                                                          (Just ixe) = get ng' e -- export nodes index
 
 {-
 create :: [([String],[String])] -> Gr Text Text

@@ -1,11 +1,13 @@
 module ParseModule (parseImportsExports, parseModule) where
 
 import Control.Monad (void)
+import Control.Monad.IO.Class (MonadIO, liftIO)
+import Control.Monad.Catch (MonadThrow)
 import Text.Megaparsec
 import Text.Megaparsec.String
 import qualified Text.Megaparsec.Lexer as L
 
-import Types (ImportStmt(..), ExportStmt(..), ImpExports(..), empty)
+import Types (ImportStmt(..), ExportStmt(..), ImpExports(..))
 
 
 sc :: Parser ()
@@ -65,9 +67,9 @@ flatten ies = foldr f empty ies
                 (Just _, Just _) -> undefined
     f (ImpExports (ImportStmt is, ExportStmt e)) (ImpExports (ImportStmt isa, ExportStmt ea)) = ImpExports (ImportStmt $ isa ++ is, e' e ea)
 
-parseModule :: String -> IO ImpExports
+parseModule :: (MonadThrow m, MonadIO m) => String -> m ImpExports
 parseModule f = do
-  c <- readFile f
+  c <- liftIO $ readFile f
   case runParser parseImportsExports "" c of
     Left _ -> return empty
     Right a -> return a
