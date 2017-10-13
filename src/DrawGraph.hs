@@ -59,17 +59,21 @@ get :: NgGraph -> String -> Maybe Int
 get ng s = fst <$> find f (labNodes $ gr ng)
                       where f = (== s) . snd
 
+getX :: NgGraph -> String -> Int
+getX ng s = case get ng s of
+              Nothing -> error "asdf"
+              Just i -> i
+
 nextInt :: NgGraph -> Int
 nextInt g = length $ labEdges $ Types.gr g
 
 merge :: NgGraph -> ImpExports -> NgGraph
-merge ng (ImpExports (ImportStmt is, ExportStmt e)) = foldl f ng' is
+merge ng (ImpExports (ImportStmt is, ExportStmt e)) = NgGraph $ foldl f ng' is
                                                         where
-                                                          f a i = NgGraph $ insEdge (ixi, ixe, ()) (gr ng'')
-                                                            where ng'' = add a i -- add the new import node
-                                                                  (Just ixi) = get ng'' i -- and get its index
-                                                          ng' = add ng e -- first add the export node
-                                                          (Just ixe) = get ng' e -- export nodes index
+                                                          f a i = iE i . add a i -- add the import to the graph and add then the edge
+                                                          iE i ng = insEdge (getX ng i, ixe, ()) $ gr ng
+                                                          ng' = add ng e -- Add export node
+                                                          (Just ixe) = get ng' e -- Get exports index
 
 {-
 create :: [([String],[String])] -> Gr Text Text

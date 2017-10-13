@@ -1,14 +1,25 @@
 module ParseModule (parseImportsExports, parseModule) where
 
-import Control.Monad (void)
+import Control.Monad.Catch (MonadThrow, Exception, throwM)
 import Control.Monad.IO.Class (MonadIO, liftIO)
-import Control.Monad.Catch (MonadThrow)
+import Control.Monad (void)
 import Text.Megaparsec
 import Text.Megaparsec.String
 import qualified Text.Megaparsec.Lexer as L
 
 import Types (ImportStmt(..), ExportStmt(..), ImpExports(..))
 
+data NgParseError = TooManyExports
+
+instance Show NgParseError where
+  show TooManyExports = "There has to be just one export statement"
+
+instance Exception NgParseError
+
+-- | Internal types
+type Is = [String]
+type Es = [String]
+type IsEs = (Is, Es)
 
 sc :: Parser ()
 sc = L.space (void $ satisfy f) lineCmnt blockCmnt
@@ -35,8 +46,8 @@ importExportParser i = do
   _ <- eol <|> restOfLine
   return j
 
-impExpLine :: Parser ImpExports
-impExpLine = p empty
+impExpLine :: Parser (Is,Es)
+impExpLine = p ([],[])
   where p s = eof *> pure s
                <|> try (importParser s >>= \a -> p a)
                <|> try (exportParser s >>= \a -> p a)
@@ -45,31 +56,25 @@ impExpLine = p empty
 restOfLine :: Parser String
 restOfLine = manyTill anyChar (eol <|> eof *> return "blash")
 
-importParser :: ImpExports -> Parser ImpExports
-importParser (ImpExports (ImportStmt i, e)) = importExportParser "import" >>= \s -> return $ ImpExports (ImportStmt (s ++ i), e)
+importParser :: IsEs -> Parser IsEs
+importParser (i, e) = importExportParser "import" >>= \s -> return $ (s ++ i, e)
 
--- | TODO: handle case when there are more is more than one export statement
-exportParser :: ImpExports -> Parser ImpExports
-exportParser (ImpExports (ImportStmt i, e))= importExportParser "export" >>= \s -> return $ ImpExports (ImportStmt (i), ExportStmt $ Just $ head s)
+exportParser :: IsEs -> Parser IsEs
+exportParser (i, e) = importExportParser "export" >>= \s -> return $ (i , s ++ i)
 
--- | Returns a tuple of ImportStmt (containing a list of import statements) and ExportStmt (contains a list of export statements)
-parseImportsExports :: Parser ImpExports
+parseImportsExports :: Parser IsEs
 parseImportsExports = flatten <$> someTill impExpLine (eof *> return "eof")
 
-flatten :: [ImpExports] -> ImpExports
-flatten [] = empty
-flatten ies = foldr f empty ies
-  where
-    e' e ea = case (e, ea) of
-                (Nothing, Nothing) -> ExportStmt Nothing
-                (Nothing, Just _) -> ExportStmt ea
-                (Just _, Nothing) -> ExportStmt e
-                (Just _, Just _) -> undefined
-    f (ImpExports (ImportStmt is, ExportStmt e)) (ImpExports (ImportStmt isa, ExportStmt ea)) = ImpExports (ImportStmt $ isa ++ is, e' e ea)
+flatten :: [IsEs] -> IsEs
+flatten []  = ([],[])
+flatten ies = foldr f ([],[]) ies
+ where
+  f (is, e) (isa, ea) = (isa ++ is, ea ++ e)
 
 parseModule :: (MonadThrow m, MonadIO m) => String -> m ImpExports
 parseModule f = do
-  c <- liftIO $ readFile f
+  c <- liftIO (readFile f)
   case runParser parseImportsExports "" c of
-    Left _ -> return empty
-    Right a -> return a
+    Left _ -> throwM TooManyExports
+    Right (is, es) -> if length es /= 1 then throwM TooManyExports
+                      else return $ ImpExports $ (ImportStmt is, ExportStmt $ head es)

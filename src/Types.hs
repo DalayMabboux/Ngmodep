@@ -8,7 +8,7 @@ newtype NgGraph = NgGraph { gr :: Gr String () }
 newtype ImportStmt = ImportStmt [String]
   deriving (Show, Eq)
 
-data ExportStmt = ExportStmt String
+newtype ExportStmt = ExportStmt String
   deriving (Show, Eq)
 
 newtype ImpExports = ImpExports (ImportStmt, ExportStmt)
