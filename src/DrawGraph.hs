@@ -68,10 +68,10 @@ nextInt :: NgGraph -> Int
 nextInt g = length $ labEdges $ Types.gr g
 
 merge :: NgGraph -> ImpExports -> NgGraph
-merge ng (ImpExports (ImportStmt is, ExportStmt e)) = NgGraph $ foldl f ng' is
+merge ng (ImpExports (ImportStmt is, ExportStmt e)) = foldl f ng' is
                                                         where
-                                                          f a i = iE i . add a i -- add the import to the graph and add then the edge
-                                                          iE i ng = insEdge (getX ng i, ixe, ()) $ gr ng
+                                                          f a i = iE i $ add a i -- add the import to the graph and add then the edge
+                                                          iE i _ng = NgGraph $ insEdge (getX _ng i, ixe, ()) $ gr _ng
                                                           ng' = add ng e -- Add export node
                                                           (Just ixe) = get ng' e -- Get exports index
 

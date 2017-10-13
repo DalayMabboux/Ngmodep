@@ -1,7 +1,7 @@
 import Test.Tasty
 import Test.Tasty.HUnit
 import Text.Megaparsec
-import Test.Hspec.Megaparsec
+import Test.Hspec.Megaparsec (shouldParse)
 
 import ParseModule (parseImportsExports)
 import Types (ImpExports(..), ImportStmt(..), ExportStmt(..))
