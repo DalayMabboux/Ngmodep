@@ -24,6 +24,7 @@ library
                      , fgl
                      , text
                      , exceptions
+                     , containers
   default-language:    Haskell2010
 
 executable Ngmodep-exe
@@ -38,6 +39,7 @@ executable Ngmodep-exe
                      , fgl
                      , text
                      , exceptions
+                     , containers
   default-language:    Haskell2010
 
 test-suite Ngmodep-test
