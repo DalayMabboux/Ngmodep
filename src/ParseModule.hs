@@ -7,12 +7,11 @@ import Text.Megaparsec
 import Text.Megaparsec.String
 import qualified Text.Megaparsec.Lexer as L
 
-import Types (ImportStmt(..), ExportStmt(..), ImpExports(..))
-
-data NgParseError = TooManyExports | ParseException
+data NgParseError = TooManyExports | ParseException String
 
 instance Show NgParseError where
   show TooManyExports = "There has to be just one export statement"
+  show (ParseException s) = "Megaparsec exception: " ++ s
 
 instance Exception NgParseError
 
@@ -71,10 +70,10 @@ flatten ies = foldr f ([],[]) ies
  where
   f (is, e) (isa, ea) = (isa ++ is, ea ++ e)
 
-parseModule :: (MonadThrow m, MonadIO m) => String -> m ImpExports
+parseModule :: (MonadThrow m, MonadIO m) => String -> m ([String],[String])
 parseModule f = do
   c <- liftIO (readFile f)
   case runParser parseImportsExports "" c of
-    Left _ -> throwM ParseException
-    Right (is, es) -> if length es /= 1 then throwM TooManyExports
-                      else return $ ImpExports (ImportStmt is, ExportStmt $ head es)
+    Left e -> throwM $ ParseException (show e)
+    Right t@(_, es) -> if length es /= 1 then throwM TooManyExports
+                      else return t

@@ -1,15 +1,6 @@
-module Types (NgGraph(..), ImportStmt(..), ExportStmt(..), ImpExports(..)) where
+module Types (NgGraph(..)) where
 
 import Data.Graph.Inductive.PatriciaTree (Gr)
 
 newtype NgGraph = NgGraph { gr :: Gr String () }
-  deriving (Show, Eq)
-
-newtype ImportStmt = ImportStmt [String]
-  deriving (Show, Eq)
-
-newtype ExportStmt = ExportStmt String
-  deriving (Show, Eq)
-
-newtype ImpExports = ImpExports (ImportStmt, ExportStmt)
   deriving (Show, Eq)

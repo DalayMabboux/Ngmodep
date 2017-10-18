@@ -1,16 +1,17 @@
+module ParseModuleTest (mainParseModuleTest) where
+
 import Test.Tasty
 import Test.Tasty.HUnit
 import Text.Megaparsec
 import Test.Hspec.Megaparsec (shouldParse)
 
 import ParseModule (parseImportsExports)
-import Types (ImpExports(..), ImportStmt(..), ExportStmt(..))
 
-main :: IO ()
-main = do
+mainParseModuleTest :: IO (TestTree)
+mainParseModuleTest = do
   c <- readFile "test/simpleModule.ts"
   h <- readFile "test/complexModule.ts"
-  defaultMain (testGroup "Our Library Tests" [simple, complex, mixed, simpleModule c, complexModule h])
+  return $ testGroup "Our Library Tests" [simple, complex, mixed, simpleModule c, complexModule h]
 
 simple :: TestTree
 simple = testGroup "Simple import / exports"

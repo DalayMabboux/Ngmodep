@@ -45,7 +45,7 @@ executable Ngmodep-exe
 test-suite Ngmodep-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
-  main-is:             ParseModuleTest.hs
+  main-is:             Test.hs
   build-depends:       base
                      , Ngmodep
                      , megaparsec
