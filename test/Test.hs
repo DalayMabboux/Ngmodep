@@ -6,5 +6,5 @@ import Test.Tasty (defaultMain, testGroup)
 
 main :: IO ()
 main = do
-    tt <- mainParseModuleTest
-    defaultMain $ testGroup "Main" [tt, mainDrawGraphTest]
+    parseTests <- mainParseModuleTest
+    defaultMain $ testGroup "Main" [parseTests, mainDrawGraphTest]

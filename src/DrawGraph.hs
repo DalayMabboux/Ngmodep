@@ -1,4 +1,4 @@
-module DrawGraph where
+module DrawGraph (addNode, merge, get, nextInt) where
 
 import Data.List (find)
 import Data.Graph.Inductive.Graph (labEdges, labNodes, insNode, insEdge)
@@ -21,7 +21,7 @@ getX :: NgGraph -> String -> Int
 getX ng s = fromMaybe (error "asdf") (get ng s)
 
 nextInt :: NgGraph -> Int
-nextInt g = length $ labEdges $ Types.gr g
+nextInt g = length $ labNodes $ Types.gr g
   
 merge :: NgGraph -> ([String], [String]) -> NgGraph
 merge ng (is, es) = foldl f ng' is
