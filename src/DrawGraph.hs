@@ -1,32 +1,33 @@
-module DrawGraph (addNode, merge, get, nextInt) where
+module DrawGraph (addNode, merge, addEdge, addNode, DepGraph) where
 
 import Data.List (find)
-import Data.Graph.Inductive.Graph (labEdges, labNodes, insNode, insEdge)
-import Data.Maybe
-import Types (NgGraph(..))
+import Data.GraphViz (graphToDot, nonClusteredParams, graphToDot)
+import Data.GraphViz.Printing (renderDot, toDot)
+import Data.GraphViz
+import Data.Maybe (fromMaybe)
+import Data.Set as S
+
+type V = String
+type E = (String, String)
+type DepGraph = (S.Set V, S.Set E)
 
 -- | Add a new node with the given string to the graph
-addNode :: NgGraph -> String -> NgGraph
-addNode g s = case get g s of
-            Nothing -> NgGraph (insNode (ni, s) (gr g))
-            Just _ -> g
-            where ni = nextInt g
+addNode :: String -> DepGraph -> DepGraph
+addNode s (vs, es) = (S.insert s vs, es)
 
--- | May be return the Node fron the graph with the given label
-get :: NgGraph -> String -> Maybe Int
-get ng s = fst <$> find f (labNodes $ gr ng)
-                      where f = (== s) . snd
+addEdge :: (String, String) -> DepGraph -> DepGraph
+addEdge e (vs, es) = (vs, S.insert e es)
 
-getX :: NgGraph -> String -> Int
-getX ng s = fromMaybe (error "asdf") (get ng s)
+merge :: ([String], [String]) -> DepGraph-> DepGraph
+merge (is, es) ng = Prelude.foldl f ng' is
+                       where
+                         f a i = addEdge (i, head es) $ addNode i a                                                                     
+                         ng' = addNode (head es) ng 
 
-nextInt :: NgGraph -> Int
-nextInt g = length $ labNodes $ Types.gr g
-  
-merge :: NgGraph -> ([String], [String]) -> NgGraph
-merge ng (is, es) = foldl f ng' is
-                      where
-                        f a i = iE i $ addNode a i -- add the import to the graph and add then the edge
-                        iE i _ng = NgGraph $ insEdge (getX _ng i, ixe, ()) $ gr _ng
-                        ng' = addNode ng (head es) -- Add export node
-                        (Just ixe) = get ng' (head es) -- Get exports index
+-- ngGrapToDot :: NgGraph -> String
+-- ngGrapToDot ng = showDot (fglToDot (gr ng))
+
+-- writeDot :: String -> String -> IO ()
+-- writeDot p s = writeFile p s
+                         
+                         

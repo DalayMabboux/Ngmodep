@@ -1,29 +1,49 @@
-module DrawGraphTest (mainDrawGraphTest) where
+module DrawGraphTest where
 
-import Data.Graph.Inductive.Graph (empty, size, insNode, LNode(..), noNodes)
-import Data.Graph.Inductive.PatriciaTree (Gr)
 import Data.Maybe (isJust, isNothing)
+import Data.Set as S
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (testCase, assert)
-import Types (NgGraph(..))
 
-import DrawGraph (addNode, nextInt, get, merge) 
+import DrawGraph (addNode, addEdge, merge, DepGraph) 
 
 mainDrawGraphTest :: TestTree
-mainDrawGraphTest = testGroup "Graph" [simple]
+mainDrawGraphTest = testGroup "Graph" [simple, complex]
 
 simple :: TestTree
-simple = testGroup "Basic tests"
+simple = testGroup "Basic tests: addNode, addEdge"
   [
-      testCase "Next int from empty graph is 0" (assert $ nextInt (NgGraph empty) == 0)
-    , testCase "Next int from one graph node is 1" (assert $ nextInt (NgGraph oneNodeGraph) == 1)
-    , testCase "Find a node" (assert $ isJust $ get (NgGraph oneNodeGraph) "test")
-    , testCase "Dont find a node" (assert $ isNothing $ get (NgGraph oneNodeGraph) "notPresent")
-    , testCase "Add a node" (assert $ noNodes (gr (addNode (NgGraph empty) "NewNode")) == 1)
-    , testCase "Merge graph: 2 nodes" (assert $ noNodes (gr (merge (NgGraph empty) (["Imp"],["Exp"]))) == 2)
-    , testCase "Merge graph: 1 edge" (assert $ size (gr (merge (NgGraph empty) (["Imp"],["Exp"]))) == 1)
+      testCase "Add a node" (assert $ nodes oneNodeGraph == 1)
+    , testCase "Add a second node" (assert $ nodes (addNode p2 oneNodeGraph) == 2)
+    , testCase "Check nodes and edges" (assert $ nodes complexNodeGraph == 4 && edges complexNodeGraph == 3)
+    , testCase "Add an existing node" (assert $ nodes (addNode p1 oneNodeGraph) == 1)
+    , testCase "Add an existing edge" (assert $ edges (addEdge (p1, p2) complexNodeGraph) == 3)
   ]
 
-oneNodeGraph :: Gr String ()
-oneNodeGraph = insNode (0, "test") empty
+complex :: TestTree
+complex = testGroup "Complex tests: merge"
+  [
+      testCase "Add a node" (assert $
+                                let g = merge (["Imp"],["Exp"]) oneNodeGraph
+                                in nodes g == 3 && edges g == 1)
+    , testCase "Merge complex graph" (assert $
+                    let g = merge (["n1", "n2"],["exp"]) complexNodeGraph
+                    in nodes g == 7 && edges g == 5)
+  ]
 
+p1 = "p1"
+c1 = "c1"
+p2 = "p2"
+c2 = "c2"
+
+complexNodeGraph :: DepGraph
+complexNodeGraph =  addEdge (p2, c2) . addEdge (p1, p2) . addEdge (p1, c1) . addNode c2 . addNode c1 . addNode p2 $ oneNodeGraph
+
+oneNodeGraph :: DepGraph
+oneNodeGraph = addNode p1 (S.empty, S.empty)
+
+nodes :: DepGraph -> Int
+nodes (vs, es) = S.size vs
+
+edges :: DepGraph -> Int
+edges (vs, es) = S.size es
