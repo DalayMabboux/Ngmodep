@@ -1,6 +1,7 @@
 module Main (main) where
 
 import Data.Foldable (traverse_, toList)
+import Data.Set as S
 import System.Directory.Tree (AnchoredDirTree(..), DirTree(..), filterDir, readDirectoryWith)
 import System.Environment (getArgs)
 import System.Exit (ExitCode(ExitFailure), exitWith)
@@ -8,6 +9,7 @@ import System.Exit (ExitCode(ExitFailure), exitWith)
 import System.FilePath (takeExtensions)
 
 import ParseModule (parseModule)
+import DrawGraph (merge, pushOut, morphToDot)
 
 -- | Loop recursivly through the given directory
 main :: IO ()
@@ -15,8 +17,10 @@ main = do
   r <- getArgs >>= parse
   _:/tree <- readDirectoryWith return r
   -- Parse every file (JS module)
-  i <- mapM parseModule $ toList tree
-  mapM_ (putStrLn . show) i
+  --i <- mapM parseModule (filterDir myPred tree)
+  ---mapM_ (putStrLn . show) i
+  let res = foldl' merge S.empty (filterDir myPred tree)
+  pushOut $ morphToDot res
   -- Create a graph out of the [ImpExports]
   return ()
     where myPred (Dir ('.':_) _) = False
