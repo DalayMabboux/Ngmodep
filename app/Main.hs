@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Data.Foldable (traverse_, toList)
+import Data.Foldable (foldl')
 import Data.Set as S
 import System.Directory.Tree (AnchoredDirTree(..), DirTree(..), filterDir, readDirectoryWith)
 import System.Environment (getArgs)
@@ -11,21 +11,22 @@ import System.FilePath (takeExtensions)
 import ParseModule (parseModule)
 import DrawGraph (merge, pushOut, morphToDot)
 
--- | Loop recursivly through the given directory
 main :: IO ()
 main = do
   r <- getArgs >>= parse
   _:/tree <- readDirectoryWith return r
-  -- Parse every file (JS module)
-  --i <- mapM parseModule (filterDir myPred tree)
-  ---mapM_ (putStrLn . show) i
-  let res = foldl' merge S.empty (filterDir myPred tree)
+  let ft = filterDir myPred tree
+  res <- Data.Foldable.foldl' f (return (S.empty, S.empty)) ft
   pushOut $ morphToDot res
-  -- Create a graph out of the [ImpExports]
   return ()
     where myPred (Dir ('.':_) _) = False
           myPred (File n _) = takeExtensions n == ".module.js"
           myPred _ = True
+          f :: IO (S.Set String, S.Set (String, String)) -> FilePath -> IO (S.Set String, S.Set (String, String))
+          f g f = do
+                    (vs, es) <- g
+                    n <- parseModule f
+                    return $ merge n (vs, es)
 
 -- | Parse command line arguments
 parse :: [String] -> IO (String)
