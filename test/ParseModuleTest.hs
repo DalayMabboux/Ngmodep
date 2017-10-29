@@ -9,8 +9,8 @@ import ParseModule (parseImportsExports)
 
 mainParseModuleTest :: IO (TestTree)
 mainParseModuleTest = do
-  c <- readFile "test/simpleModule.ts"
-  h <- readFile "test/complexModule.ts"
+  c <- readFile "test/simpleModule.js"
+  h <- readFile "test/complexModule.js"
   return $ testGroup "Our Library Tests" [simple, complex, mixed, simpleModule c, complexModule h]
 
 simple :: TestTree

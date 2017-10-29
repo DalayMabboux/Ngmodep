@@ -5,7 +5,6 @@ import Data.Set as S
 import System.Directory.Tree (AnchoredDirTree(..), DirTree(..), filterDir, readDirectoryWith)
 import System.Environment (getArgs)
 import System.Exit (ExitCode(ExitFailure), exitWith)
-
 import System.FilePath (takeExtensions)
 
 import ParseModule (parseModule)
