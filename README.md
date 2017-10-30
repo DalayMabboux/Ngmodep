@@ -5,7 +5,10 @@ Generate a simple dependency graph of Angular modules (JavaScript (ES6)).
 
 ## Code Example
 
+```bash
 Ngmodep . dependecy.dot
+dot -Tpng dependecy.dot > dependecy.png
+```
 
 ## Motivation
 
@@ -13,11 +16,15 @@ Haskell learning toy project.
 
 ## Installation
 
+```bash
 stack install
+```
 
 ## Tests
 
+```bash
 stack test
+```
 
 ## Further ideas
 - Improve exception handling
