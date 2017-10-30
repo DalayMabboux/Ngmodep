@@ -1,16 +1,17 @@
 module ParseModule (parseImportsExports, parseModule) where
 
+import Control.Applicative ((<|>))
 import Control.Monad.Catch (MonadThrow, Exception, throwM)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad (void)
-import Text.Megaparsec
-import Text.Megaparsec.String
+import Text.Megaparsec (satisfy, some, alphaNumChar, sepBy1, string, between, eol, eof, manyTill, try, anyChar, someTill, runParser)
+import Text.Megaparsec.String (Parser)
 import qualified Text.Megaparsec.Lexer as L
 
-data NgParseError = TooManyExports | ParseException String
+data NgParseError = TooManyExports String | ParseException String
 
 instance Show NgParseError where
-  show TooManyExports = "There has to be just one export statement"
+  show (TooManyExports f) = "There has to be just one export statement in the file " ++ f
   show (ParseException s) = "Megaparsec exception: " ++ s
 
 instance Exception NgParseError
@@ -75,5 +76,5 @@ parseModule f = do
   c <- liftIO (readFile f)
   case runParser parseImportsExports "" c of
     Left e -> throwM $ ParseException (show e)
-    Right t@(_, es) -> if length es /= 1 then throwM TooManyExports
+    Right t@(_, es) -> if length es /= 1 then throwM (TooManyExports f)
                       else return t
